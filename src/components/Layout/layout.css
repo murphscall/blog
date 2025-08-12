@@ -1,0 +1,234 @@
+:root {
+  --border-radius: 4px;
+  --color-text: #333;
+  --color-primary: #7026b9;
+
+  /* Dark Theme Palette (Dracula-like) */
+  --dt-background: #282a36;
+  --dt-current-line: #44475a;
+  --dt-foreground: #f8f8f2;
+  --dt-comment: #6272a4;
+  --dt-cyan: #8be9fd;
+  --dt-green: #50fa7b;
+  --dt-orange: #ffb86c;
+  --dt-pink: #ff79c6;
+  --dt-purple: #bd93f9;
+  --dt-red: #ff5555;
+  --dt-yellow: #f1fa8c;
+
+  /* Font & Spacing variables (unchanged) */
+  --font-sans: 'Noto Sans KR', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-lg: 18px;
+  --font-md: 17px;
+  --font-sm: 14px;
+  --font-sx: 12px;
+  --line-height-loose: 1.75;
+  --line-height-normal: 1.5;
+  --line-height-dense: 1.1;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 64px;
+  --size-content: 54rem;
+  --size-gutter: var(--space-5);
+  --size-gap: var(--space-6);
+  --header-height: 100px;
+}
+
+/* Base HTML & Body styles (unchanged) */
+html {
+  -webkit-text-size-adjust: 100%;
+  box-sizing: border-box;
+  font: sans-serif;
+  font-size: var(--font-md);
+  line-height: var(--line-height-normal);
+  overflow-y: scroll;
+}
+
+body {
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  color: var(--color-text);
+  font-family: var(--font-sans), serif;
+  font-weight: normal;
+  margin: 0;
+  word-wrap: break-word;
+}
+
+/* Layout styles (unchanged) */
+.siteContainer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.pageGrid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: var(--size-gap);
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 80px var(--size-gutter) 0 var(--size-gutter);
+}
+
+.sidebarContainer {
+  position: relative;
+}
+
+.sidebarContainer > aside {
+  position: sticky;
+  top: calc(var(--header-height) + var(--space-3));
+}
+
+@media (max-width: 992px) {
+  .pageGrid {
+    grid-template-columns: 1fr;
+  }
+  .sidebarContainer {
+    display: none;
+  }
+}
+
+/* Link styles (unchanged) */
+a {
+  background-color: transparent;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+}
+
+a:active,
+a:hover {
+  outline-width: 0;
+  text-decoration: none;
+}
+
+/**
+ * Harmonized Styling for Code and Underlines
+ * Based on Dark Theme
+ */
+
+/* 1. Fenced Code Blocks (e.g., ```javascript) */
+pre[class*="language-"] {
+  background: var(--dt-background) !important;
+  color: var(--dt-foreground) !important;
+  border: 1px solid var(--dt-current-line) !important;
+  border-radius: var(--border-radius);
+  padding: var(--space-3);
+  margin: var(--space-4) 0;
+  overflow: auto;
+  font-size: var(--font-sm);
+  line-height: var(--line-height-loose);
+}
+
+/* 2. Inline Code (e.g., `const a = 1;`) */
+:not(pre) > code[class*="language-"] {
+  background: var(--dt-current-line) !important; /* Lighter background */
+  color: var(--dt-orange) !important; /* Less bright color */
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  white-space: normal;
+}
+
+/* 3. Custom Underline */
+u {
+  text-decoration-line: underline;
+  text-decoration-color: var(--dt-comment); /* Less saturated color */
+  text-decoration-style: solid; /* Solid underline */
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px; /* Adds a little space */
+}
+
+/* PrismJS token colors for dark theme */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: var(--dt-comment);
+}
+
+.token.punctuation {
+  color: var(--dt-foreground);
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: var(--dt-purple);
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: var(--dt-green);
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: var(--dt-pink);
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: var(--dt-cyan);
+}
+
+.token.function,
+.token.class-name {
+  color: var(--dt-yellow);
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: var(--dt-orange);
+}
+
+/* Table Styles for Dark Theme */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-4) 0;
+  font-size: var(--font-sm);
+  color: var(--dt-foreground);
+}
+
+thead {
+  background-color: var(--dt-current-line);
+}
+
+th, td {
+  border: 1px solid var(--dt-current-line);
+  padding: var(--space-2);
+  text-align: left;
+}
+
+th {
+  font-weight: bold;
+}
+
+tbody tr:nth-child(odd) {
+  background-color: var(--dt-background);
+}
+
+tbody tr:nth-child(even) {
+  background-color: #3a3d4e; /* Slightly lighter than background */
+}

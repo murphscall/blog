@@ -1,0 +1,58 @@
+.listContainer h1 {
+  margin-bottom: var(--space-5);
+}
+
+/* Renaming postCard to postItem for clarity */
+.postItem {
+  padding: var(--space-5) 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.postItem:first-of-type {
+    padding-top: 0;
+}
+
+.postItem:last-of-type {
+    border-bottom: none;
+}
+
+.postTitle {
+  margin-top: 0;
+  margin-bottom: var(--space-2);
+  font-size: 1.75rem;
+}
+
+.postLink {
+  text-decoration: none;
+  color: inherit;
+  /* transition removed */
+}
+
+.postLink:hover {
+  color: var(--color-primary);
+}
+
+.postDate {
+  color: #718096;
+  margin-bottom: var(--space-4);
+  display: block;
+}
+
+.postTags {
+  padding-top: var(--space-4);
+}
+
+.tagLink {
+  display: inline-block;
+  background-color: #edf2f7;
+  color: #4a5568;
+  padding: var(--space-1) var(--space-3);
+  margin-right: var(--space-2);
+  border-radius: 9999px;
+  font-size: var(--font-sm);
+  text-decoration: none;
+}
+
+.tagLink:hover {
+  background-color: #e2e8f0;
+}
