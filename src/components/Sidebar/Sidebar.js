@@ -27,10 +27,23 @@ const Sidebar = ({ tableOfContents }) => {
     const handleClick = e => {
       if (e.target.tagName === "A" && e.target.hash) {
         e.preventDefault()
-        const id = decodeURIComponent(e.target.hash.substring(1))
-        const element = document.getElementById(id)
+        const hash = e.target.hash
+        const element = document.querySelector(decodeURIComponent(hash))
         if (element) {
           element.scrollIntoView({ behavior: "smooth", block: "center" })
+
+          // Scroll sidebar to center the active link
+          const activeLink = e.target
+          const sidebar = tocNode.closest('aside')
+          if (sidebar) {
+            const sidebarRect = sidebar.getBoundingClientRect()
+            const linkRect = activeLink.getBoundingClientRect()
+            const scrollTop = sidebar.scrollTop + linkRect.top - sidebarRect.top - (sidebarRect.height / 2) + (linkRect.height / 2)
+            sidebar.scrollTo({
+              top: scrollTop,
+              behavior: 'smooth'
+            })
+          }
         }
       }
     }

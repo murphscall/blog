@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { Link } from "gatsby"
+import { FaHome, FaUser } from "react-icons/fa"
 import * as styles from "./header.module.css"
 
 const Header = ({ siteTitle }) => {
@@ -29,10 +30,10 @@ const Header = ({ siteTitle }) => {
         </Link>
         <nav className={styles.nav}>
           <Link to="/" className={styles.navLink} activeClassName={styles.activeNavLink}>
-            Home
+            <FaHome size={24} />
           </Link>
           <Link to="/about" className={styles.navLink} activeClassName={styles.activeNavLink}>
-            About
+            <FaUser size={24} />
           </Link>
         </nav>
       </div>

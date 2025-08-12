@@ -1,21 +1,40 @@
-import React from "react"
+import React, { useState, useRef, useCallback } from "react"
 import { Link, graphql } from "gatsby"
 import Layout from "../components/Layout/Layout"
 import Seo from "../components/seo"
 import * as styles from "./index.module.css"
 
 const IndexPage = ({ data }) => {
-  const posts = data.allMarkdownRemark.nodes
+  const allPosts = data.allMarkdownRemark.nodes
+  const [postsToShow, setPostsToShow] = useState(allPosts.slice(0, 10))
+  const [hasMore, setHasMore] = useState(allPosts.length > 10)
+  const observer = useRef()
+
+  const lastPostElementRef = useCallback(node => {
+    if (observer.current) observer.current.disconnect()
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPostsToShow(prevPosts => {
+          const newPosts = allPosts.slice(prevPosts.length, prevPosts.length + 10)
+          if (prevPosts.length + 10 >= allPosts.length) {
+            setHasMore(false)
+          }
+          return [...prevPosts, ...newPosts]
+        })
+      }
+    })
+    if (node) observer.current.observe(node)
+  }, [allPosts, hasMore])
 
   return (
     <Layout>
       <Seo title="Home" />
       <div className={styles.listContainer}>
-        <h1>Posts</h1>
-        {posts.map(post => {
-          const { title, date, tags } = post.frontmatter
+        <h1>기록</h1>
+        {postsToShow.map((post, index) => {
+          const { title, date, tags, description } = post.frontmatter
           const { slug } = post.fields
-          return (
+          const article = (
             <article key={slug} className={styles.postItem}>
               <header>
                 <h2 className={styles.postTitle}>
@@ -24,7 +43,7 @@ const IndexPage = ({ data }) => {
                 <small className={styles.postDate}>{date}</small>
               </header>
               <section>
-                <p>{post.excerpt}</p>
+                <p>{description}</p>
               </section>
               {tags && tags.length > 0 && (
                 <footer className={styles.postTags}>
@@ -37,6 +56,10 @@ const IndexPage = ({ data }) => {
               )}
             </article>
           )
+          if (postsToShow.length === index + 1) {
+            return React.cloneElement(article, { ref: lastPostElementRef })
+          }
+          return article
         })}
       </div>
     </Layout>
@@ -51,11 +74,11 @@ export const query = graphql`
           slug
         }
         frontmatter {
-          date(formatString: "MMMM DD, YYYY")
+          date(formatString: "YYYY년 MM월 DD일")
           title
           tags
+          description
         }
-        excerpt(pruneLength: 100)
       }
     }
   }
