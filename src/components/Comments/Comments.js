@@ -10,7 +10,7 @@ const Comments = () => {
       repo: 'murphscall/blog',
       'issue-term': 'pathname',
       label: 'comment',
-      theme: 'github-dark',
+      theme: 'github-light',
       crossorigin: 'anonymous',
       async: 'true',
     };

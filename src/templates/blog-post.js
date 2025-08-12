@@ -41,15 +41,38 @@ const BlogPost = ({ data }) => {
         }}>
           <div>
             {previous && (
-              <Link to={previous.fields.slug} rel="prev">
-                ← {previous.frontmatter.title}
+              <Link to={previous.fields.slug} rel="prev" style={{
+                display: 'block',
+                padding: '1rem',
+                border: '1px solid #eee',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                color: 'inherit'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.borderColor = '#ccc'}
+              onMouseOut={(e) => e.currentTarget.style.borderColor = '#eee'}
+              >
+                <div style={{ fontSize: '0.8rem', color: '#888' }}>← 이전 글</div>
+                <div style={{ marginTop: '0.5rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>{previous.frontmatter.title}</div>
               </Link>
             )}
           </div>
           <div>
             {next && (
-              <Link to={next.fields.slug} rel="next">
-                {next.frontmatter.title} →
+              <Link to={next.fields.slug} rel="next" style={{
+                display: 'block',
+                padding: '1rem',
+                border: '1px solid #eee',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                color: 'inherit',
+                textAlign: 'right'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.borderColor = '#ccc'}
+              onMouseOut={(e) => e.currentTarget.style.borderColor = '#eee'}
+              >
+                <div style={{ fontSize: '0.8rem', color: '#888' }}>다음 글 →</div>
+                <div style={{ marginTop: '0.5rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>{next.frontmatter.title}</div>
               </Link>
             )}
           </div>

@@ -1,7 +1,7 @@
 ---
 title: "Hello World"
 date: "2025-08-12"
-tags: ["java", "spring", "gatsby"]
+tags: ["Java", "Spring" ]
 ---
 
 This is my first blog post!
