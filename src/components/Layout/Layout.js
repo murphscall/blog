@@ -38,7 +38,7 @@ const Layout = ({ children, tableOfContents }) => {
         }}
       >
         <a
-          href="https://github.com/your-github-username" // Placeholder
+          href="https://github.com/murphscall" // Placeholder
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: `var(--color-text)`, margin: `0 10px` }}
@@ -46,7 +46,7 @@ const Layout = ({ children, tableOfContents }) => {
           <FaGithub size={24} />
         </a>
         <a
-          href="mailto:your-email@example.com" // Placeholder
+          href="wlsgnwkd22@gmail.com" // Placeholder
           style={{ color: `var(--color-text)`, margin: `0 10px` }}
         >
           <FaEnvelope size={24} />
