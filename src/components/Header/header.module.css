@@ -18,8 +18,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0 64px;
-  padding: 20px;
+  margin: 0 auto;
+  padding: 20px var(--size-gutter);
+  max-width: 1080px;
+  transition: max-width 0.3s ease, padding 0.3s ease; /* Smooth transition */
 }
 
 .titleLink {
@@ -49,4 +51,21 @@
 .activeNavLink {
   font-weight: bold;
   color: #333;
+}
+
+/* Tablet Breakpoint */
+@media (max-width: 992px) {
+  .content {
+    max-width: 800px;
+  }
+}
+
+/* Mobile Breakpoint */
+@media (max-width: 767px) {
+  .content {
+    padding: 15px var(--space-3);
+  }
+  .titleLink {
+    font-size: 1.25rem;
+  }
 }

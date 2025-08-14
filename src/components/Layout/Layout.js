@@ -16,14 +16,19 @@ const Layout = ({ children, tableOfContents }) => {
     }
   `)
 
+  const hasToc = !!tableOfContents
+
   return (
     <div className="siteContainer">
       <Header siteTitle={data.site.siteMetadata?.title || `Title`} />
       <div className="pageGrid">
         <div className="mainContent">
+          <div className={`mobileSidebar ${hasToc ? "has-toc" : ""}`}>
+            <Sidebar tableOfContents={tableOfContents} />
+          </div>
           <main>{children}</main>
         </div>
-        <div className="sidebarContainer">
+        <div className="desktopSidebar">
           <Sidebar tableOfContents={tableOfContents} />
         </div>
       </div>
@@ -46,7 +51,7 @@ const Layout = ({ children, tableOfContents }) => {
           <FaGithub size={24} />
         </a>
         <a
-          href="wlsgnwkd22@gmail.com" // Placeholder
+          href="mailto:wlsgnwkd22@gmail.com" // Corrected mailto link
           style={{ color: `var(--color-text)`, margin: `0 10px` }}
         >
           <FaEnvelope size={24} />

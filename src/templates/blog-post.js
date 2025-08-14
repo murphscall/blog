@@ -30,7 +30,7 @@ const BlogPost = ({ data }) => {
             </div>
           )}
         </div>
-        <div dangerouslySetInnerHTML={{ __html: post.html }} />
+        <div className="post-content" dangerouslySetInnerHTML={{ __html: post.html }} />
 
         <nav style={{
           display: 'flex',

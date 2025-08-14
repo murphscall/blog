@@ -1,0 +1,49 @@
+.profileSection {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding-bottom: var(--space-5);
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid #e9ecef;
+}
+
+.profileImage {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background-color: #e0e0e0; /* Placeholder color */
+  flex-shrink: 0; /* Prevent image from shrinking */
+  /* TODO: Add a real profile image url here */
+  background-image: url('../../images/profile.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.contentWrapper {
+  /* This div just groups the text content. No special styles needed. */
+}
+
+.name {
+  margin: 0 0 var(--space-1);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.description {
+  color: #495057;
+  margin-bottom: var(--space-3);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.links a {
+  color: var(--color-text);
+  margin-right: var(--space-3); /* Only add margin to the right */
+  transition: color 0.2s ease, transform 0.2s ease;
+  display: inline-block;
+}
+
+.links a:hover {
+  color: var(--color-primary);
+  transform: translateY(-2px);
+}

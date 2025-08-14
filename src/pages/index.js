@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback } from "react"
 import { Link, graphql } from "gatsby"
 import Layout from "../components/Layout/Layout"
 import Seo from "../components/seo"
+import Profile from "../components/Profile/Profile"
 import * as styles from "./index.module.css"
 
 const IndexPage = ({ data }) => {
@@ -29,8 +30,8 @@ const IndexPage = ({ data }) => {
   return (
     <Layout>
       <Seo title="Home" />
+      <Profile />
       <div className={styles.listContainer}>
-        <h1>기록</h1>
         {postsToShow.map((post, index) => {
           const { title, date, tags, description } = post.frontmatter
           const { slug } = post.fields
