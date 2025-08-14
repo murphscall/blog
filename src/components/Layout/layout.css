@@ -326,6 +326,7 @@ blockquote p {
 /* 1. Default to aggressive wrapping for everything in the post. */
 .post-content * {
   word-break: break-word;
+  white-space: normal !important;
 }
 
 /* 2. Corrective overrides for specific elements. */
@@ -343,6 +344,11 @@ blockquote p {
 
 .post-content pre code {
   white-space: pre;
+}
+
+/* PrismJS adds a wrapper div that needs overflow handling */
+.post-content .gatsby-highlight {
+  overflow-x: auto;
 }
 
 .post-content img,

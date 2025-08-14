@@ -79,6 +79,18 @@ module.exports = {
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
     {
+      resolve: `gatsby-plugin-manifest`,
+      options: {
+        name: `JeDevlog`,
+        short_name: `JeDevlog`,
+        start_url: `/`,
+        background_color: `#ffffff`,
+        theme_color: `#7026b9`,
+        display: `minimal-ui`,
+        icon: `src/images/icon.png`, // This is the path to the favicon
+      },
+    },
+    {
       resolve: `gatsby-plugin-google-fonts`,
       options: {
         fonts: [
