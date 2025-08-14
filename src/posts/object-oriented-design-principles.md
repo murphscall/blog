@@ -119,7 +119,7 @@ public class UserService {
 
 
 **해결책**
-- "이메일 발송" 책임을 `EmailService` 로 완전히 분리하고, 두 서비스는 `이벤트` 를 통해 느슨하게 소통한다.
+- **이메일 발송** 책임을 `EmailService` 로 완전히 분리하고, 두 서비스는 `이벤트` 를 통해 느슨하게 소통한다.
 
 ```java
 
@@ -159,6 +159,7 @@ public class EmailService {
 
 
 ---
+<br>
 
 ### O 개방-폐쇄 원칙 (OCP)
 - 확장에는 열려 있고 , 수정에는 닫혀 있어야 한다.
@@ -234,6 +235,7 @@ public class OrderService {
 `OrderService` 코드는 전혀 수정할 필요가 없다.
 
 ---
+<br>
 
 ### L 리스코프 치환 원칙(LSP)
 - 하위 타입은 언제나 상위 타입으로 대체할 수 있어야 한다.
@@ -344,6 +346,9 @@ public class SmartPlanningTeam {
 ```
 
 ---
+
+<br>
+
 ### I 인터페이스 분리 원칙(ISP)
 - 클라이언트는 자신이 사용하지 않는 메소드에 의존해서는 안된다.
 
