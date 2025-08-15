@@ -1,22 +1,41 @@
 :root {
+
   --border-radius: 4px;
+
   --color-text: #333;
+
   --color-primary: #7026b9;
 
+
+
   /* Dark Theme Palette (Dracula-like) */
+
   --dt-background: #282a36;
+
   --dt-current-line: #44475a;
+
   --dt-foreground: #f8f8f2;
+
   --dt-comment: #6272a4;
+
   --dt-cyan: #8be9fd;
+
   --dt-green: #50fa7b;
+
   --dt-orange: #ffb86c;
+
   --dt-pink: #ff79c6;
+
   --dt-purple: #bd93f9;
+
   --dt-red: #ff5555;
+
   --dt-yellow: #f1fa8c;
 
+
+
   /* Font & Spacing variables (unchanged) */
+
   --font-sans: 'Noto Sans KR', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --font-lg: 18px;
@@ -36,9 +55,12 @@
   --size-gutter: var(--space-5);
   --size-gap: var(--space-6);
   --header-height: 100px;
+
 }
 
-/* Base HTML & Body styles (unchanged) */
+
+
+/* Base HTML & Body styles */
 html {
   -webkit-text-size-adjust: 100%;
   box-sizing: border-box;
@@ -46,6 +68,12 @@ html {
   font-size: var(--font-md);
   line-height: var(--line-height-normal);
   overflow-y: scroll;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
 }
 
 body {
@@ -57,9 +85,10 @@ body {
   margin: 0;
   word-wrap: break-word;
   word-break: break-all;
+  overflow-x: hidden;
 }
 
-/* Layout styles (unchanged) */
+/* Layout styles */
 .siteContainer {
   min-height: 100vh;
   display: flex;
@@ -75,7 +104,7 @@ body {
   max-width: 1080px;
   margin: 0 auto;
   padding: 120px var(--size-gutter) 0 var(--size-gutter);
-  transition: max-width 0.3s ease, padding 0.3s ease; /* Smooth transition */
+  transition: max-width 0.3s ease, padding 0.3s ease;
 }
 
 .sidebarContainer {
@@ -89,8 +118,7 @@ body {
   overflow-y: auto;
 }
 
-
-/* Link styles (unchanged) */
+/* Link styles */
 a {
   background-color: transparent;
   color: var(--color-primary);
@@ -106,12 +134,7 @@ a:hover {
   text-decoration: none;
 }
 
-/**
- * Harmonized Styling for Code and Underlines
- * Based on Dark Theme
- */
-
-/* 1. Fenced Code Blocks (e.g., ```javascript) */
+/* Code and Underline Styles */
 pre[class*="language-"] {
   background: var(--dt-background) !important;
   color: var(--dt-foreground) !important;
@@ -124,81 +147,52 @@ pre[class*="language-"] {
   line-height: var(--line-height-loose);
 }
 
-/* 2. Inline Code (e.g., `const a = 1;`) */
 :not(pre) > code[class*="language-"] {
-  background: var(--dt-current-line) !important; /* Lighter background */
-  color: var(--dt-orange) !important; /* Less bright color */
+  background: var(--dt-current-line) !important;
+  color: var(--dt-orange) !important;
   padding: 0.2em 0.4em;
   border-radius: 3px;
   white-space: normal;
 }
 
-/* 3. Custom Underline */
 u {
   text-decoration-line: underline;
-  text-decoration-color: var(--dt-comment); /* Less saturated color */
-  text-decoration-style: wavy; /* Solid underline */
+  text-decoration-color: var(--dt-comment);
+  text-decoration-style: wavy;
   text-decoration-thickness: 2px;
-  text-underline-offset: 3px; /* Adds a little space */
+  text-underline-offset: 3px;
 }
 
-/* PrismJS token colors for dark theme */
+/* PrismJS token colors */
 .token.comment,
 .token.prolog,
 .token.doctype,
 .token.cdata {
   color: var(--dt-comment);
 }
-
 .token.punctuation {
   color: var(--dt-foreground);
 }
-
-.token.property,
-.token.tag,
-.token.boolean,
-.token.number,
-.token.constant,
-.token.symbol,
-.token.deleted {
+.token.property, .token.tag, .token.boolean, .token.number, .token.constant, .token.symbol, .token.deleted {
   color: var(--dt-purple);
 }
-
-.token.selector,
-.token.attr-name,
-.token.string,
-.token.char,
-.token.builtin,
-.token.inserted {
+.token.selector, .token.attr-name, .token.string, .token.char, .token.builtin, .token.inserted {
   color: var(--dt-green);
 }
-
-.token.operator,
-.token.entity,
-.token.url,
-.language-css .token.string,
-.style .token.string {
+.token.operator, .token.entity, .token.url, .language-css .token.string, .style .token.string {
   color: var(--dt-pink);
 }
-
-.token.atrule,
-.token.attr-value,
-.token.keyword {
+.token.atrule, .token.attr-value, .token.keyword {
   color: var(--dt-cyan);
 }
-
-.token.function,
-.token.class-name {
+.token.function, .token.class-name {
   color: var(--dt-yellow);
 }
-
-.token.regex,
-.token.important,
-.token.variable {
+.token.regex, .token.important, .token.variable {
   color: var(--dt-orange);
 }
 
-/* Table Styles for Dark Theme */
+/* Table Styles */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -206,33 +200,32 @@ table {
   font-size: var(--font-sm);
   color: var(--dt-foreground);
 }
-
 thead {
   background-color: var(--dt-current-line);
 }
-
 th, td {
   border: 1px solid var(--dt-current-line);
   padding: var(--space-2);
   text-align: left;
 }
-
 th {
   font-weight: bold;
 }
-
 tbody tr:nth-child(odd) {
   background-color: var(--dt-background);
 }
-
 tbody tr:nth-child(even) {
-  background-color: #3a3d4e; /* Slightly lighter than background */
+  background-color: #3a3d4e;
 }
 
-/* Responsive Content Styles */
+/* Content Styles */
+.mainContent {
+  min-width: 0;
+}
+
 .mainContent img,
 .mainContent video,
-.mainContent iframe {
+.mainContent iframe:not(.utterances-frame) {
   max-width: 100%;
   height: auto;
   display: block;
@@ -250,8 +243,7 @@ blockquote {
   background-color: var(--dt-current-line);
   color: var(--dt-foreground);
   padding: var(--space-3);
-  margin-left: 0;
-  margin-right: 0;
+  margin: 0;
   border-radius: var(--border-radius);
 }
 
@@ -271,38 +263,30 @@ blockquote p {
   padding-bottom: var(--space-4);
   border-bottom: 1px solid #e2e8f0;
 }
-
-/* Horizontal layout for mobile sidebar content */
 .mobileSidebar ul {
   display: flex;
   flex-wrap: wrap;
   padding-left: 0;
   list-style: none;
 }
-
 .mobileSidebar li {
   margin-right: var(--space-2);
   margin-bottom: var(--space-2);
 }
-
 .mobileSidebar h4 {
-    display: none;
+  display: none;
 }
 
 /* === Responsive Layout === */
-
-/* Tablet Breakpoint */
 @media (max-width: 992px) {
   .pageGrid {
     grid-template-columns: 1fr;
     max-width: 800px;
   }
-
   .sidebarContainer,
   .desktopSidebar {
     display: none;
   }
-
   .mobileSidebar {
     display: block;
   }
@@ -311,50 +295,34 @@ blockquote p {
   }
 }
 
-/* Mobile Breakpoint */
 @media (max-width: 767px) {
   .pageGrid {
     padding-top: 80px;
     padding-left: var(--space-3);
     padding-right: var(--space-3);
   }
+  .post-content pre[class*="language-"],
+  .post-content .gatsby-highlight {
+    margin-left: calc(var(--space-3) * -1);
+    margin-right: calc(var(--space-3) * -1);
+    border-radius: 0;
+  }
 }
 
-
 /* === Comprehensive Post Content Overflow & Wrapping Fix === */
-
-/* 1. Default to aggressive wrapping for everything in the post. */
 .post-content * {
   word-break: break-word;
   white-space: normal !important;
 }
 
-/* 2. Corrective overrides for specific elements. */
-.post-content table {
-  display: block;
-  width: 100%;
+.post-content .gatsby-highlight,
+.post-content pre[class*="language-"] {
   overflow-x: auto;
-  white-space: nowrap;
+  white-space: pre !important;
+  word-break: normal !important;
 }
 
-.post-content pre {
-  white-space: pre;
-  overflow-x: auto;
-}
-
-.post-content pre code {
-  white-space: pre;
-}
-
-/* PrismJS adds a wrapper div that needs overflow handling */
-.post-content .gatsby-highlight {
-  overflow-x: auto;
-}
-
-.post-content img,
-.post-content video,
-.post-content iframe {
-  max-width: 100%;
-  height: auto;
-  display: block;
+.post-content pre[class*="language-"] code {
+  white-space: inherit !important;
+  word-break: inherit !important;
 }

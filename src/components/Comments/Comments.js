@@ -1,4 +1,5 @@
 import React, { createRef, useLayoutEffect } from 'react';
+import * as styles from './comments.module.css';
 
 const Comments = () => {
   const containerRef = createRef();
@@ -22,7 +23,7 @@ const Comments = () => {
     containerRef.current.appendChild(utterances);
   }, [containerRef]);
 
-  return <div ref={containerRef} />;
+  return <div ref={containerRef} className={styles.commentsContainer} />;
 };
 
 export default Comments;
