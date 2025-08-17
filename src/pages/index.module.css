@@ -20,13 +20,14 @@
   margin-top: 0;
   margin-bottom: var(--space-2);
   font-size: 1.75rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .postLink {
   text-decoration: none;
   color: inherit;
   /* transition removed */
+  font-weight: inherit;
 }
 
 .postLink:hover {
