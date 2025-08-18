@@ -6,10 +6,11 @@
 /* Renaming postCard to postItem for clarity */
 .postItem {
   padding: var(--space-5) 0;
-  border-bottom: 1px solid #e2e8f0;
+  border-top: 1px solid #e2e8f0;
 }
 
 .postItem:first-of-type {
+    border-top: none;
     padding-top: 0;
 }
 
@@ -43,6 +44,9 @@
 
 .postTags {
   padding-top: var(--space-4);
+}
+.postTags a:hover {
+  color: var(--nord10);
 }
 
 .tagLink {

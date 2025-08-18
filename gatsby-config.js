@@ -10,7 +10,7 @@
 module.exports = {
   siteMetadata: {
     title: `JeDevlog`,
-    description: `Kick off your next, great Gatsby project with this default starter. This barebones starter ships with the main Gatsby configuration files you might need.`,
+    description: `안녕하세요 꾸준히 기록하는 개발자입니다.`,
     author: `@JeDevlog`,
     siteUrl: `https://jedevlog.dev/`
   },
@@ -84,8 +84,8 @@ module.exports = {
         name: `JeDevlog`,
         short_name: `JeDevlog`,
         start_url: `/`,
-        background_color: `#ffffff`,
-        theme_color: `#7026b9`,
+        background_color: `#2E3440`,
+        theme_color: `#2E3440`,
         display: `minimal-ui`,
         icon: `src/images/icon.png`, // This is the path to the favicon
       },

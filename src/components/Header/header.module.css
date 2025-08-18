@@ -45,7 +45,7 @@
 }
 
 .navLink:hover {
-  color: #007acc; /* A nice accent color */
+  color: var(--nord10); /* A nice accent color */
 }
 
 .activeNavLink {

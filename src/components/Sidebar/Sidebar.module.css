@@ -34,7 +34,7 @@
 }
 
 .tagList a:hover {
-  background: #eee; /* Keep a subtle hover effect */
+  color: var(--nord10); /* Keep a subtle hover effect */
 }
 
 /* Style for the currently active page link */
@@ -73,7 +73,7 @@
 }
 
 .toc a:hover {
-  color: #ccc; /* Slightly brighter on hover */
+  color: var(--nord8); /* Slightly brighter on hover */
 }
 
 .toc .active {

@@ -2,6 +2,8 @@ import React from "react"
 import { graphql, Link } from "gatsby"
 import Layout from "../components/Layout/Layout"
 import Comments from "../components/Comments/Comments"
+import Seo from "../components/seo"
+import * as styles from "./blog-post.module.css"
 
 const BlogPost = ({ data }) => {
   const { markdownRemark: post, previous, next } = data
@@ -32,47 +34,20 @@ const BlogPost = ({ data }) => {
         </div>
         <div className="post-content" dangerouslySetInnerHTML={{ __html: post.html }} />
 
-        <nav style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginTop: 'var(--space-6)',
-          paddingBottom: 'var(--space-4)',
-          borderBottom: '1px solid #eee'
-        }}>
+        <nav className={styles.postNavigation}>
           <div>
             {previous && (
-              <Link to={previous.fields.slug} rel="prev" style={{
-                display: 'block',
-                padding: '1rem',
-                border: '1px solid #eee',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                color: 'inherit'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.borderColor = '#ccc'}
-              onMouseOut={(e) => e.currentTarget.style.borderColor = '#eee'}
-              >
-                <div style={{ fontSize: '0.8rem', color: '#888' }}>← 이전 글</div>
-                <div style={{ marginTop: '0.5rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>{previous.frontmatter.title}</div>
+              <Link to={previous.fields.slug} rel="prev" className={styles.prevLink}>
+                <div className={styles.navSubtext}>← 이전 글</div>
+                <div className={styles.navTitle}>{previous.frontmatter.title}</div>
               </Link>
             )}
           </div>
           <div>
             {next && (
-              <Link to={next.fields.slug} rel="next" style={{
-                display: 'block',
-                padding: '1rem',
-                border: '1px solid #eee',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                color: 'inherit',
-                textAlign: 'right'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.borderColor = '#ccc'}
-              onMouseOut={(e) => e.currentTarget.style.borderColor = '#eee'}
-              >
-                <div style={{ fontSize: '0.8rem', color: '#888' }}>다음 글 →</div>
-                <div style={{ marginTop: '0.5rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>{next.frontmatter.title}</div>
+              <Link to={next.fields.slug} rel="next" className={styles.nextLink}>
+                <div className={styles.navSubtext}>다음 글 →</div>
+                <div className={styles.navTitle}>{next.frontmatter.title}</div>
               </Link>
             )}
           </div>
@@ -85,6 +60,8 @@ const BlogPost = ({ data }) => {
     </Layout>
   )
 }
+
+export const Head = ({ data }) => <Seo title={data.markdownRemark.frontmatter.title} />
 
 export const query = graphql`
   query BlogPostById(

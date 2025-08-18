@@ -7,7 +7,7 @@ const Profile = () => {
     <section className={styles.profileSection}>
       <div className={styles.profileImage} aria-label="Profile Picture"></div>
       <div className={styles.contentWrapper}>
-        <h2 className={styles.name}>JeDev</h2>
+        <h2 className={styles.name}>Je</h2>
         <p className={styles.description}>
           안녕하세요 꾸준히 기록하는 개발자입니다.
         </p>
