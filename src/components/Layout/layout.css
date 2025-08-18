@@ -12,7 +12,7 @@
 
   --dt-background: #282a36;
 
-  --dt-current-line: #44475a;
+  --dt-current-line: #EEEEEE;
 
   --dt-foreground: #f8f8f2;
 
@@ -31,6 +31,8 @@
   --dt-red: #ff5555;
 
   --dt-yellow: #f1fa8c;
+
+  --dt-codeText:#ED775A;
 
 
 
@@ -121,7 +123,7 @@ body {
 /* Link styles */
 a {
   background-color: transparent;
-  color: var(--color-primary);
+  color: var(--dt-codeText);
   text-decoration: none;
   font-weight: 500;
   text-decoration-thickness: 1.5px;
@@ -149,8 +151,8 @@ pre[class*="language-"] {
 
 :not(pre) > code[class*="language-"] {
   background: var(--dt-current-line) !important;
-  color: var(--dt-orange) !important;
-  padding: 0.2em 0.4em;
+  color: var(--dt-codeText) !important;
+  padding: 0.15em 0.2em;
   border-radius: 3px;
   white-space: normal;
 }
@@ -160,7 +162,7 @@ u {
   text-decoration-color: var(--dt-comment);
   text-decoration-style: wavy;
   text-decoration-thickness: 2px;
-  text-underline-offset: 3px;
+  text-underline-offset: 1px;
 }
 
 /* PrismJS token colors */
@@ -241,7 +243,7 @@ tbody tr:nth-child(even) {
 blockquote {
   border-left: 5px solid var(--dt-purple);
   background-color: var(--dt-current-line);
-  color: var(--dt-foreground);
+  color: var(--dt-background);
   padding: var(--space-3);
   margin: 0;
   border-radius: var(--border-radius);

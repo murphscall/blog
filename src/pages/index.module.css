@@ -1,5 +1,6 @@
-.listContainer h1 {
+.listContainer > h2 {
   margin-bottom: var(--space-5);
+  color: gray;
 }
 
 /* Renaming postCard to postItem for clarity */

@@ -15,7 +15,7 @@ const TagPageTemplate = ({ pageContext, data }) => {
     <Layout>
       <Seo title={`Posts tagged "${tag}"`} />
       <div className={styles.listContainer}>
-        <h1>{tagHeader}</h1>
+        <h2>{tagHeader}</h2>
         {edges.map(({ node }) => {
           const title = node.frontmatter.title || node.fields.slug
           return (
@@ -29,17 +29,12 @@ const TagPageTemplate = ({ pageContext, data }) => {
                 <small className={styles.postDate}>{node.frontmatter.date}</small>
               </header>
               <section>
-                <p
-                  dangerouslySetInnerHTML={{
-                    __html: node.frontmatter.description || node.excerpt,
-                  }}
-                  itemProp="description"
-                />
+                <p>{node.frontmatter.description || node.excerpt}</p>
               </section>
             </article>
           )
         })}
-        <Link to="/tags">All tags</Link>
+        
       </div>
     </Layout>
   )
@@ -62,6 +57,7 @@ export const pageQuery = graphql`
           frontmatter {
             title
             date(formatString: "YYYY년 MM월 DD일")
+            description
           }
         }
       }
