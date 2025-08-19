@@ -1,7 +1,7 @@
 ---
 title: "객체 지향 SOLID 원칙 , 왜 필요한걸까?"
 date: "2025-08-14"
-tags: ["Java","SOLID"]
+tags: ["객체지향"]
 description : 객체 지향의 SOLID 원칙이 생겨난 배경과 필요한 이유를 알아보자.
 ---
 

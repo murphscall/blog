@@ -36,7 +36,12 @@ module.exports = {
         plugins: [
           `gatsby-remark-table-of-contents`,
           `gatsby-remark-autolink-headers`,
-          `gatsby-remark-mermaid`,
+          {
+            resolve: `gatsby-remark-mermaid`,
+            options: {
+              theme: 'forest'
+            }
+          },
           {
             resolve: `gatsby-remark-images`,
             options: {

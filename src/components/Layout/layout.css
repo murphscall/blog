@@ -182,7 +182,7 @@ pre[class*="language-"] {
 u {
   text-decoration-line: underline;
   text-decoration-color: var(--dt-comment);
-  text-decoration-style: wavy;
+  text-decoration-style: solid;
   text-decoration-thickness: 2px;
   text-underline-offset: 1px;
 }
