@@ -34,6 +34,7 @@ module.exports = {
       resolve: `gatsby-transformer-remark`,
       options: {
         plugins: [
+          `gatsby-remark-smartypants`,
           `gatsby-remark-table-of-contents`,
           `gatsby-remark-autolink-headers`,
           {

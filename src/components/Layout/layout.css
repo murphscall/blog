@@ -2,7 +2,7 @@
 
   --border-radius: 4px;
 
-  --color-text: #333;
+  --color-text: rgb(25,25,25);
 
   --color-primary: #6272a4;
 
@@ -63,7 +63,7 @@
   --font-sans: 'Noto Sans KR', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --font-lg: 18px;
-  --font-md: 17px;
+  --font-md: 16px;
   --font-sm: 14px;
   --font-sx: 12px;
   --line-height-loose: 1.75;
@@ -75,6 +75,7 @@
   --space-4: 24px;
   --space-5: 32px;
   --space-6: 64px;
+  --space-7: 72px;
   --size-content: 54rem;
   --size-gutter: var(--space-5);
   --size-gap: var(--space-6);
@@ -171,10 +172,12 @@ pre[class*="language-"] {
   line-height: var(--line-height-loose);
 }
 
-:not(pre) > code[class*="language-"] {
-  background: var(--nord3) !important;
-  color: var(--nord6) !important;
-  padding: 0.15em 0.2em;
+:not(pre) > code[class*="language-text"] {
+  background: var(--nord4) !important;
+  color: var(--nord1) !important;
+  padding: 3px 5px;
+  font-weight: bold;
+  font-size: 13px;
   border-radius: 3px;
   white-space: normal;
 }
@@ -185,6 +188,9 @@ u {
   text-decoration-style: solid;
   text-decoration-thickness: 2px;
   text-underline-offset: 1px;
+}
+p{
+  line-height: 1.73;
 }
 
 /* PrismJS token colors */
@@ -325,21 +331,24 @@ blockquote p {
     padding-left: var(--space-3);
     padding-right: var(--space-3);
   }
-  .post-content pre[class*="language-"],
-  .post-content .gatsby-highlight {
-    margin-left: calc(var(--space-3) * -1);
-    margin-right: calc(var(--space-3) * -1);
-    border-radius: 0;
-  }
 }
 
 /* === Comprehensive Post Content Overflow & Wrapping Fix === */
-.post-content * {
+/* This rule applies word-break to common text elements but excludes code blocks */
+.post-content p,
+.post-content li,
+.post-content h1,
+.post-content h2,
+.post-content h3,
+.post-content h4,
+.post-content h5,
+.post-content h6,
+.post-content td,
+.post-content th,
+.post-content blockquote {
   word-break: break-word;
-  white-space: normal !important;
 }
 
-.post-content .gatsby-highlight,
 .post-content pre[class*="language-"] {
   overflow-x: auto;
   white-space: pre !important;
@@ -349,4 +358,54 @@ blockquote p {
 .post-content pre[class*="language-"] code {
   white-space: inherit !important;
   word-break: inherit !important;
+}
+
+/* Custom Heading Margins */
+.post-content h1 {
+  margin-top: var(--space-7); /* 64px */
+  margin-bottom: var(--space-1); /* 24px */
+}
+
+.post-content h2 {
+  margin-top: var(--space-6); /* 32px */
+  margin-bottom: var(--space-1); /* 16px */
+}
+
+.post-content h3 {
+  margin-top: var(--space-5); /* 24px */
+  margin-bottom: var(--space-1); /* 16px */
+}
+
+.post-content h4,
+.post-content h5,
+.post-content h6 {
+  margin-top: var(--space-4); /* 24px */
+  margin-bottom: var(--space-1); /* 8px */
+}
+
+/* Custom Scrollbar for Code Blocks */
+.post-content pre[class*="language-"] {
+  /* For Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: var(--nord3) var(--nord1);
+}
+
+/* For Webkit-based browsers (Chrome, Safari, Edge) */
+.post-content pre[class*="language-"]::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.post-content pre[class*="language-"]::-webkit-scrollbar-track {
+  background: var(--nord1);
+  border-radius: 4px;
+}
+
+.post-content pre[class*="language-"]::-webkit-scrollbar-thumb {
+  background-color: var(--nord3);
+  border-radius: 4px;
+}
+
+.post-content pre[class*="language-"]::-webkit-scrollbar-thumb:hover {
+  background-color: var(--nord8);
 }

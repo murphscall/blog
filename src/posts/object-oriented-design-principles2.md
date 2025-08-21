@@ -581,4 +581,4 @@ Getter/Setter/Property 를 남발하면, 불필요한 객체 내부 구현의 �
 
 
 ## Reference Blog
-- [객체 지향 생활 체조 원칙 - hudi.blog](http://localhost:8000/object-oriented-design-principles2/)
+- [객체 지향 생활 체조 원칙 - hudi.blog](https://hudi.blog/thoughtworks-anthology-object-calisthenics/)
