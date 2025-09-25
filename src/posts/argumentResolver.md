@@ -1,6 +1,6 @@
 ---
 title : "스프링에서 Argument Resolver 이용하기"
-data : "2025-08-24"
+date : "2025-08-24"
 tags : ["Spring" , "Java"]
 description : 언제 Argument Resolver 를 사용해야할지 알아보자.
 ---
