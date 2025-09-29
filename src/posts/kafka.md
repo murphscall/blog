@@ -347,7 +347,7 @@ Kafka 에서 컨슈머 그룹 이라는 개념을 활용하면, 각 컨슈머 �
 
 <br>
 
-![kafka-1](../images/kafka-1.png)
+![kafka-1](../images/postfile/kafka-1.png)
 - 토픽에 저장되어 있는 여러 메시지는 메시지의 순서를 나타내는 고유 번호인 **오프셋** 을 가지고 있다.
 - 오프셋 번호는 인덱스처럼 0부터 시작한다.
 - 컨슈머 그룹은 1개 이상의 컨슈머를 가질 수 있다.
@@ -445,7 +445,7 @@ spring:
 
 아래 그림과 같이 Spring Boot 서버를 활용해 Kafka 메시지를 넣어보자.
 
-![kafka-2.png](../images/kafka-2.png)
+![kafka-2.png](../images/postfile/kafka-2.png)
 
 
 먼저, 사용자로부터 api 요청을 받을 Controller 를 생성하자.
@@ -561,7 +561,7 @@ Created topic email.send.
 이전에 사용자의 요청을 받을 수 있도록 Controller 를 만들었었다.
 `/api/emails` 로 요청을 보내야 하는데 필자는 Postman 을 사용해서 요청했다.
 
-![kafka-3](../images/kafka-3.png)
+![kafka-3](../images/postfile/kafka-3.png)
 
 요청의 body 는 우리가 만들었던 SendEmailRequestDto 에 맞춰 작성하고 전송한다.
 위 그림을 보면 성공적으로 응답이 반환되었다.
@@ -684,12 +684,12 @@ public class EmailSendConsumer {
 
 한번 API 요청을 통해 직접 확인해보자.
 
-![kafka-4](../images/kafka-4.png)
+![kafka-4](../images/postfile/kafka-4.png)
 
 
 스프링 부트의 콘솔에 로그를 확인하게 되면 우리가 보낸 메시지를 잘 읽어온 것을 확인할 수 있다.
 
-![kafka-5](../images/kafka-5.png)
+![kafka-5](../images/postfile/kafka-5.png)
 
 
 ## 정리
