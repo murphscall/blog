@@ -36,19 +36,29 @@ const BlogPost = ({ data }) => {
 
         <nav className={styles.postNavigation}>
           <div>
-            {previous && (
+            {previous ? (
               <Link to={previous.fields.slug} rel="prev" className={styles.prevLink}>
                 <div className={styles.navSubtext}>← 이전 글</div>
                 <div className={styles.navTitle}>{previous.frontmatter.title}</div>
               </Link>
+            ) : (
+              <div>
+                <div className={styles.navSubtext}>← 이전 글</div>
+                <div className={styles.navTitle} style={{ fontSize: '0.8rem', color: '#999' }}>이전 글이 없습니다</div>
+              </div>
             )}
           </div>
           <div>
-            {next && (
+            {next ? (
               <Link to={next.fields.slug} rel="next" className={styles.nextLink}>
                 <div className={styles.navSubtext}>다음 글 →</div>
                 <div className={styles.navTitle}>{next.frontmatter.title}</div>
               </Link>
+            ) : (
+              <div>
+                <div className={styles.navSubtext}>다음 글 →</div>
+                <div className={styles.navTitle} style={{ fontSize: '0.8rem', color: '#999' }}>다음 글이 없습니다</div>
+              </div>
             )}
           </div>
         </nav>

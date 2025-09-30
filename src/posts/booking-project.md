@@ -2,7 +2,7 @@
 title: "콘서트 예약 시스템 개발"
 date: "2025-09-16"
 tags: ["Redis" , "프로젝트 고민", "Database"]
-description: "분산 락을 사용할 때와 비관적 락을 사용해야 할 때"
+description: "동시성 제어 기술에 대한 고민, 트랜잭션의 범위와 불필요한 리소스 낭비"
 ---
 
 ## 서론
@@ -14,222 +14,224 @@ description: "분산 락을 사용할 때와 비관적 락을 사용해야 할 �
 그래서 실제로 정말 어려운 요구사항을 가정하고 스스로 한계라고 느껴질만한 부분까지 깊이 있게 파내려가서 해결하는 경험을 쌓고 싶었다.
 또한, 그게 비전공자인 나에게 다른 경쟁자가 쫓아오지 못하게 하는 기술적인 해자가 될 수 있다고 생각한다.
 
+그렇게 정한 프로젝트는 **콘서트 예매 시스템**인데 해당 주제에 프로젝트를 선택한 이유는 
+콘서트 예매 특성상 **짧은 시간 안에 동시에 많은 요청이 몰리는 구조**이고 해당 트래픽들을 어떻게 처리할 것인지, 또 어떻게 해야 데이터 정합성을 잘 유지 할 수 있을지 고민을 하고 좋은 경험들을 쌓을 수 있을 것 같았다.
 
 
-## 분산락과 비관락에 대한 고민
 
-개발을 진행하면서 분산 환경에서의 비관락은 성능 저하 또는 데드락 현상을 발생시킬 수 있다는 내용을 보았다.
-그래서 문득 분산락이 비관락보다 성능이 뛰어난 것은 아니지만 <u>분산환경에서 비관락의 성능저하가 있을 때 둘의 차이가 어느정도 인지 눈으로 확인하고 싶었다.</u>
+## 동시성 제어 기술에 대한 고민
 
-현재 프로젝트는 비관 락 + unique 제약 조건을 통해 데이터 정합성을 유지하고 있는데, 분산 락과의 비교를 위해 코드를 추가하고 테스트 도구를 도입했다.
+콘서트 예매 시스템 특성상 하나의 티켓(좌석)을 예매하기 위해 많은 요청들이 동시에 쏟아질 것이다.
+하나의 티켓은 하나의 회원에게만 할당되어야하고 두명이 같은 하나의 티켓을 가질 수는 없다.
+이러한 데이터 정합성을 위해서 어떤 동시성 제어 기술을 써야할까 고민이 되었다. 알아본 기술들은 아래와 같았다.
 
-```javascript
-import http from 'k6/http';  
-import {check, sleep} from 'k6';  
-import exec from 'k6/execution';  
-  
-export function setup() {  
-    const loginRes = http.post('http://localhost:8080/api/auth/login', JSON.stringify({  
-        email: 'test@naver.com', // 실제 로그인 가능한 계정  
-        password: 'test1111^^',      // 실제 비밀번호  
-    }), {  
-        headers: {'Content-Type': 'application/json'},  
-    });  
-    if (loginRes.status !== 200) {  
-        exec.test.abort('Login failed, aborting test.');  
-    }  
-    const accessToken = loginRes.cookies.accessToken[0].value;  
-    return accessToken;  
-}  
-  
-export const options = {  
-    scenarios: {  
-        burst_booking: {  
-            executor: 'ramping-vus',  
-            startVUs: 0,  
-            stages: [  
-                {duration: '5s', target: 300},  
-                {duration: '30s', target: 300},  
-                {duration: '10s', target: 0},  
-            ],        },    },};  
-  
-export default function (accessToken) {  
-    if (!accessToken) {  
-        return;  
-    }  
-    const port = 8080 + (exec.vu.idInTest % 2);  
-    const url = `http://localhost:${port}/api/bookings`;  
-  
-    const payload = JSON.stringify({  
-        ticketId: 1, // DB에 실제로 존재하는 티켓 ID    });  
-  
-    const params = {  
-        headers: {  
-            'Content-Type': 'application/json',  
-            'Cookie': `accessToken=${accessToken}`,  
-        },    
-    };
-    const bookingRes = http.post(url, payload, params);  
-  
-    check(bookingRes, {  
-        '예매 성공 (201 Created)': (r) => r.status === 201,  
-        '예매 실패/경합 (400)': (r) => r.status === 400,  
-    });  
-    sleep(1);  
-}
-
-```
+### 낙관적 락
+- 충돌이 거의 발생하지 않는다고 낙관적으로 가정하는 락.
+- DB 가 제공하는 락 기능이 아니라 어플리케이션에서 제공하는 버전 관리 기능을 사용한다.
+- version 등의 구분 컬럼으로 충돌을 예방한다.
+- 트랜잭션을 커밋하는 시점에 충돌을 알 수 있다.
+- 최종 업데이트 과정에서만 락을 점유하기 때문에 락 점유 시간을 최소화하여 동시성을 높일 수 있다.
 
 
-`{duration: '5s', target: 300}`  : 0 명에서 300명으로 5초 동안 점진적으로 증가 시킨다.
-`{duration: '30s', target: 300}` : 300명을 유지하고, 30초 동안 부하를 지속한다.
-`{duration: '10s', target: 0}` : 300명에서 0명으로 10초 동안 점진적으로 감소 시킨다.
+### 비관적 락
+- 충돌이 발생한다고 비관적으로 가정하는 방식
+- Repeatable Read, Serializableable 정도의 격리성에서 가능하다.
+- 트랜잭션이 시작될 때 S Lock 또는 X Lock을 걸고 시작한다.
+- DB 가 제공하는 락을 사용한다.
+- 데이터 수정 즉시 트랜잭션 충돌을 알 수 있다.
+- 교착 상태 문제가 자주 발생할 수 있다.
 
-예매 티켓 오픈 시점에는 짧지만 급격하게 증가하는 트래픽이라고 생각해서 위와 같은 옵션으로 테스트를 진행했다.
+### 분산 락
+
+- 서버가 여러 대인 상황에서 동일한 데이터에 대한 동기화를 보장하기 위해 사용한다.
+- 서버들 간 동기화된 처리가 필요하고, 여러 서버에 공통된 락을 적용해야 하기 때문에 redis 를 이용하여 분산락을 이용한다.
+- 분산락 같은 경우 공통된 데이터 저장소를 이용해 자원이 사용중인지 확인하기 때문에 전체 서버에 동기화된 처리가 가능하다.
 
 
-그리고 아래는 BookingService 의 예매 로직이다.
+처음에는 비교적 구현이 간단한 비관 락을 사용했다.
+현재 상황만 놓고 보면 비관 락이 문제가 될 부분이 보이지 않았기 때문이었다. 하지만 프로젝트 목표처럼 만약 추후에 서비스가 확장이 되고
+정말 많은 사용자가 몰린다면 비관적 락은 성능 저하에 대한 문제가 발생할 여지가 있었다.
 
-### 예매 로직
+그래서 결론적으로 선택한 기술은 **분산락과 Unique 제약조건을 함께 사용하게 되었다.**
+
+일단 아래와 같은 코드로 분산락을 구현했다.
 
 ```java 
-@Transactional
-	public Long createBooking(final Long userId, final BookingRequest bookingRequest) {
 
-		    Long ticketId = bookingRequest.ticketId();
+@Transactional
+public Long createBooking(final Long userId, final BookingRequest bookingRequest) {
+
+		final Long ticketId = bookingRequest.ticketId();
+		final String lockKey = "ticket:" + ticketId;
+		final RLock lock = redissonClient.getLock(lockKey);
+
+		try {
+			boolean isLocked = lock.tryLock(0, 3, TimeUnit.SECONDS);
+			if (!isLocked) {
+				throw new IllegalStateException("락 획득 불가");
+			}
 
 			User user = userRepository.findByIdOrThrow(userId);
 			Ticket ticket = ticketRepository.findByIdWithConcertOrThrow(bookingRequest.ticketId());
-
-			// 예메 상태 여부 검사 및 변경
-			log.info("[{}] 좌석 상태 확인 및 변경 시도...", requestId);
-			ticket.checkOrUpdate();
-			log.info("[{}] 좌석 상태 변경 완료.", requestId);
-
-			Booking booking = new Booking(user, ticket);
-			Booking saveBooking = bookingRepository.save(booking);
-
+			 
+			// 예메 상태 여부 검사 및 변경 
+			ticket.checkOrUpdate(); 
+			
+			Booking booking = new Booking(user, ticket); 
+			Booking saveBooking = bookingRepository.save(booking); 
+			
 			return saveBooking.getId();
+
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (lock.isLocked() && lock.isHeldByCurrentThread()) {
+
+				lock.unlock();
+			}
+		}
 	}
+
 ```
 
+근데 해당 코드에 심각한 문제가 몇 개 있었다.
 
-### 비관적 락 적용
-```java 
-@Lock(LockModeType.PESSIMISTIC_WRITE)  
-@Query("SELECT t FROM Ticket t JOIN FETCH t.concert c WHERE t.id = :ticketId")  
-Optional<Ticket> findByIdWithConcert(@Param("ticketId") Long ticketId);
-```
+하나는 락을 해제 하는 타이밍과 트랜잭션의 범위가 불일치 한다는 것이였고 또 다른 문제는 락을 기다리고 있던 다른 요청들이 어차피 예매가 완료되어  실패할 요청인데도 불구하고 DB를 조회한다는 것 이었다.
+해당 문제를 해결하기 위해 일단 락 획득과 트랜잭션 코드를 분리했다.
 
-비관적 락을 적용하고 테스트를 진행했다.
-```console 
-█ TOTAL RESULTS
-
-    checks_total.......................: 22720  496.357955/s
-    checks_succeeded...................: 50.00% 11360 out of 22720
-    checks_failed......................: 50.00% 11360 out of 22720
-
-    ✗ 예매 성공 (201 Created)
-      ↳  0% — ✓ 1 / ✗ 11359
-    ✗ 예매 실패/경합 (400)
-      ↳  99% — ✓ 11359 / ✗ 1
-
-    HTTP
-    http_req_duration.......................................................: avg=3.31ms   min=996µs   med=2.97ms   max=418.34ms p(90)=4ms      p(95)=4.99ms
-      { expected_response:true }............................................: avg=108.86ms min=66.06ms med=108.86ms max=151.67ms p(90)=143.11ms p(95)=147.39ms
-    http_req_failed.........................................................: 99.98% 11359 out of 11361
-    http_reqs...............................................................: 11361  248.200824/s
-
-    EXECUTION
-    iteration_duration......................................................: avg=1s       min=1s      med=1s       max=1.41s    p(90)=1s       p(95)=1s
-    iterations..............................................................: 11360  248.178977/s
-    vus.....................................................................: 15     min=15             max=300
-    vus_max.................................................................: 300    min=300            max=300
-
-    NETWORK
-    data_received...........................................................: 2.5 MB 54 kB/s
-    data_sent...............................................................: 4.2 MB 93 kB/s
-```
-결과를 들여다보면
-
-`201 created` 는 예매 성공 1명으로 정합성을 잘 지켰고 이미 예약된 티켓을 요청한 나머지는 400 상태코드로 이것도 맞다.
-
-평균 요청 시간 3~4ms 도 나쁘지 않았고, 최대 418ms 정도는 락 때문에 일부 요청이 기다림이 있었던 듯 하다.
-
-일단, "티켓 한장만 성공" 이라는 비즈니스 룰은 잘 지킨 것 같다.
-
-
-### 분산 락 적용
-
-아래는 분산 락을 적용한 코드이다.
 
 ```java 
-@Transactional  
-public Long createBooking(final Long userId, final BookingRequest bookingRequest) {  
-  
-    final Long ticketId = bookingRequest.ticketId();  
-    final String lockKey = "ticket:" + ticketId;  
-    final RLock lock = redissonClient.getLock(lockKey);  
-  
-    try {  
-       boolean isLocked = lock.tryLock(5, 3, TimeUnit.SECONDS);  
-  
-       if (!isLocked) {  
-          throw new IllegalStateException("락 획득 불가");  
-       }  
-       User user = userRepository.findByIdOrThrow(userId);  
-       Ticket ticket = ticketRepository.findByIdWithConcertOrThrow(bookingRequest.ticketId());  
-  
-       // 예메 상태 여부 검사 및 변경  
-       ticket.checkOrUpdate();  
-  
-       Booking booking = new Booking(user, ticket);  
-       Booking saveBooking = bookingRepository.save(booking);  
-  
-       return saveBooking.getId();  
-  
-    } catch (InterruptedException e) {  
-       Thread.currentThread().interrupt();  
-       throw new RuntimeException("락을 획득하는 도중 인터럽트 발생", e);  
-    } finally {  
-       if (lock.isLocked() && lock.isHeldByCurrentThread()) {  
-          lock.unlock();  
-       }  
-    }  
-  
+public Long createBooking(final Long userId, final BookingRequest bookingRequest) {
+
+		log.info("예매 요청 시작");
+
+		final Long ticketId = bookingRequest.ticketId();
+		final String lockKey = "ticket:" + ticketId;
+		final RLock lock = redissonClient.getLock(lockKey);
+		final String cacheKey = TICKET_CACHE_PREFIX + ticketId;
+
+		log.info("캐시 확인");
+
+		String status = redisTemplate.opsForValue().get(cacheKey);
+
+		if ("BOOKED".equals(status)) {
+			log.warn("이미 예약된 티켓입니다.");
+			throw new IllegalStateException("이미 예약된 티켓");
+		}
+
+		try {
+			log.info("락 획득 시작");
+			boolean isLocked = lock.tryLock(0, 3, TimeUnit.SECONDS);
+			if (!isLocked) {
+				log.warn("락 획득 불가");
+				throw new IllegalStateException("락 획득 불가");
+			}
+			log.info("락 획득 성공");
+			return bookingTransactionalService.createBookingTx(userId, ticketId, cacheKey, lock);
+
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+```
+
+스프링에서는 같은 클래스 내에 메소드를 호출하게 되면 트랜잭션이 적용되지 않는다고 한다.
+그래서 새로운 클래스를 만들고 분리된 로직을 위해 메소드를 만들었다. 추후에는 AOP 에 대해서 학습하고 락 획득만 담당하게 만든다면 어떨까 싶다. 꼭 다시 적용해볼 생각이다.
+
+```java 
+
+@Service
+public class BookingTransactionalService {
+
+	private static final Logger log = LoggerFactory.getLogger(BookingTransactionalService.class);
+	private UserRepository userRepository;
+	private TicketRepository ticketRepository;
+	private BookingRepository bookingRepository;
+	private StringRedisTemplate redisTemplate;
+
+	public BookingTransactionalService(UserRepository userRepository, TicketRepository ticketRepository,
+		BookingRepository bookingRepository, StringRedisTemplate redisTemplate) {
+		this.userRepository = userRepository;
+		this.ticketRepository = ticketRepository;
+		this.bookingRepository = bookingRepository;
+		this.redisTemplate = redisTemplate;
+	}
+
+	@Transactional
+	protected Long createBookingTx(final Long userId, final Long ticketId, final String cacheKey, final RLock lock) {
+
+		log.info("락 획득후 예매시작");
+
+		User user = userRepository.findByIdOrThrow(userId);
+		Ticket ticket = ticketRepository.findByIdWithConcertOrThrow(ticketId);
+
+		// DB 유니크/상태 체크
+		ticket.checkOrUpdate();
+
+		Booking booking = new Booking(user, ticket);
+		Booking saveBooking = bookingRepository.save(booking);
+
+		log.info("락 획득후 예매 완료");
+
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				try {
+					redisTemplate.opsForValue().set(cacheKey, "BOOKED", 3, TimeUnit.HOURS);
+				} finally {
+					if (lock.isHeldByCurrentThread()) {
+						lock.unlock();
+					}
+				}
+			}
+
+			@Override
+			public void afterCompletion(int status) {
+				if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
+					if (lock.isHeldByCurrentThread()) {
+						lock.unlock();
+					}
+				}
+
+			}
+		});
+
+		return saveBooking.getId();
+	}
 }
-```
-```consosle 
-
- █ TOTAL RESULTS
-
-    checks_total.......................: 22698  495.818511/s
-    checks_succeeded...................: 49.99% 11348 out of 22698
-    checks_failed......................: 50.00% 11350 out of 22698
-
-    ✗ 예매 성공 (201 Created)
-      ↳  0% — ✓ 1 / ✗ 11348
-    ✗ 예매 실패/경합 (400)
-      ↳  99% — ✓ 11347 / ✗ 2
-
-    HTTP
-    http_req_duration.......................................................: avg=4.25ms  min=1.51ms  med=3.22ms  max=418.83ms p(90)=5.47ms  p(95)=7ms
-      { expected_response:true }............................................: avg=89.34ms min=78.97ms med=89.34ms max=99.71ms  p(90)=97.64ms p(95)=98.68ms
-    http_req_failed.........................................................: 99.98% 11348 out of 11350
-    http_reqs...............................................................: 11350  247.9311/s
-
-    EXECUTION
-    iteration_duration......................................................: avg=1s      min=1s      med=1s      max=1.41s    p(90)=1s      p(95)=1s
-    iterations..............................................................: 11349  247.909255/s
-    vus.....................................................................: 13     min=13             max=300
-    vus_max.................................................................: 300    min=300            max=300
-
-    NETWORK
-    data_received...........................................................: 2.5 MB 54 kB/s
-    data_sent...............................................................: 4.2 MB 93 kB/s
 
 ```
 
-예상했던 결과와는 달리 큰차이가 없고 평균 응답 속도는 오히려 비관적 락이 더 우수했다.
-처음에는 왜 성능 저하가 일어나지 않을까 싶어 테스트 부하를 500, 600 명 늘리게 되어도 비슷했다.
+맨 처음 코드에서는 락 해제를 finally 블록에서 해제를 하게 해두었는데 finally 는 그냥 메서드 실행이 끝날 때 실행되는 것이기 때문에 트랜잭션이 아직 커밋되지 않은 상태인데도 불구하고 락을 해제 할 수도 있다.
+그러면 그 사이에 다른 스레드가 같은 좌석의 락을 뺏어갈 수 있으니 완전한 커밋 이후 해제가 보장되게 하기 위해서 `TransactionSynchronizationManager` 을 사용했다.
+
+DB 작업이 끝나고 커밋 시점이 되었을 때, 스프링은 `TransactionSynchronizationManager` 에 등록된 모든 `TransactionSynchronization` 을 순서대로 실행한다.
+그래서 `lock.unlock` 을 여기에 등록해두면, db  커밋이 완료된 직후에 락이 풀리게 된다. 즉 , 트랜잭션이 확정된 이후 안전한 시점에 락 해제가 보장된다.
+
+
+그리고 아직 한가지 문제가 남았는데 락을 기다리는 나머지 요청들이 락을 얻고 다시 DB 에서 티켓 상태를 조회한다는 것이다.
+이 문제는 트랜잭션이 완료 되고 커밋 후에 레디스에 해당 티켓의 상태를 ttl 로 일정 시간 동안 저장해두는 방식으로 해결했다.
+
+```java 
+String status = redisTemplate.opsForValue().get(cacheKey);
+
+// 락 획득 전
+```
+
+다만, db의 데이터와 캐시의 동일성을 위해서는 예매 취소 시에는 꼭 캐시를 지워야한다.
+
+
+---
+
+### 회고
+
+해당 문제를 해결하면서 트랜잭션에 대해서 좀 더 깊게 학습이 필요하다는 생각이 들었다.
+단순히 트랜잭션은 하나라도 실패 시에 롤백 , 아니면 모두 성공과 같은 가벼운 개념으로 알고 있었는데 트랜잭션의 범위에 대해서 또 트랜잭션을 적용할 때 효율성에 대해서 생각해봐야겠다.
+그리고 지금은 새로운 클래스를 만들어 락 획득과 트랜잭션 코드를 분리했지만 락 획득을 하는 코드를 AOP 적용하여 옮겨보려고 한다.
+
+
+
+
+
 
