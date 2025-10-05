@@ -231,7 +231,214 @@ String status = redisTemplate.opsForValue().get(cacheKey);
 그리고 지금은 새로운 클래스를 만들어 락 획득과 트랜잭션 코드를 분리했지만 락 획득을 하는 코드를 AOP 적용하여 옮겨보려고 한다.
 
 
+---
+
+## AOP 적용 후기 (2025-10-25)
+
+기존의 코드는 `BookingTransactionService`를 만들어 트랜잭션 코드와 락획득 코드를 분리했었다.
+근데 비즈니스 로직과 락획득 코드를 분리하고 싶었고 다른 도메인에서도 락획득 및 해제가 필요할 순간이 온다면
+매번 분리해주어야 하는 상황이 발생할 것이라고 생각했다. 그래서 AOP 를 적용하면 락 관련 코드들을 한곳에서만 관리하고 언제든지 다른 곳에도 사용 가능하다고 생각하여 AOP 를 적용하게 되었다.
+
+
+먼저 락 획득이 필요한 메소드를 AOP 가 구별할 수 있도록 어노테이션을 만들고 선언했다.
+
+```java 
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface DistributedLock {
+	// 락을 걸 자원을 식별할 키
+	String key();
+    // 락을 얻기 위해 최대 얼마까지 기다릴지 시간 설정
+	long waitTime() default 0;
+    //락을 획득한 후 자동으로 해제될 때까지의 유효시간
+	long leaseTime() default 3;
+    // 위의 시간 단위 설정
+	TimeUnit timeUnit() default TimeUnit.SECONDS;
+}
+
+
+```
+아래와 같이 만든 어노테이션은 락 획득이 필요한 메서드 위에 `@DistributedLock` 을 선언하여 적용할 수 있다.
 
 
 
+```java 
+@DistributedLock(
+		key = "'ticket:' + #bookingRequest.ticketId()",
+		waitTime = 0,
+		leaseTime = 10,
+		timeUnit = TimeUnit.SECONDS
+	)
+	public Long createBooking(final Long userId, final BookingRequest bookingRequest) {
 
+		User user = userRepository.findByIdOrThrow(userId);
+		Ticket ticket = ticketRepository.findByIdWithConcertOrThrow(bookingRequest.ticketId());
+
+		// DB 유니크/상태 체크
+		ticket.checkOrUpdate();
+
+		Booking booking = new Booking(user, ticket);
+		Booking saveBooking = bookingRepository.save(booking);
+
+		return saveBooking.getId();
+	}
+```
+
+
+어노테이션을 만들고 락을 적용할 메서드 위에 선언했다면 이제는 그 어노테이션이 선언된 곳에 적용될 코드를 작성해야한다.
+
+아래와 같은 클래스를 만들고 `@Aspect` 어노테이션을 선언했다.
+
+```java 
+
+
+@Aspect
+@Component
+@Slf4j
+@RequiredArgsConstructor
+public class DistributedLockAspect {
+
+	private final RedissonClient redissonClient;
+	private final AopForTransaction aopForTransaction;
+	private final ExpressionParser parser = new SpelExpressionParser();
+	private final ParameterNameDiscoverer nameDiscoverer = new DefaultParameterNameDiscoverer();
+
+	@Around("@annotation(distributedLock)")
+	public Object lock(final ProceedingJoinPoint joinPoint, DistributedLock distributedLock) throws Throwable {
+
+		// 현재 실행 중인 메소드를 리플렉션(Reflection)으로 가져온다.
+		Method method = ((MethodSignature)joinPoint.getSignature()).getMethod();
+
+		// 메소드 매개변수 이름 / 값 추출
+		String[] paramNames = nameDiscoverer.getParameterNames(method);
+		Object[] args = joinPoint.getArgs();
+
+        // 변수 이름을 실제 값으로 바인딩 한다.
+		StandardEvaluationContext context = new StandardEvaluationContext();
+		for (int i = 0; i < paramNames.length; i++) {
+			context.setVariable(paramNames[i], args[i]);
+		}
+
+		String key = parser.parseExpression(distributedLock.key()).getValue(context, String.class);
+		RLock lock = redissonClient.getLock(key);
+
+		try {
+			boolean isLocked = lock.tryLock(distributedLock.waitTime(), distributedLock.leaseTime(),
+				distributedLock.timeUnit());
+			if (!isLocked) {
+				throw new InterruptedException("락을 획득 할 수 없습니다.");
+			}
+
+			log.info("락 획득 성공 : {}", key);
+			return aopForTransaction.proceed(joinPoint);
+		} catch (InterruptedException e) {
+			throw new InterruptedException();
+		} finally {
+			try {
+				lock.unlock();
+				log.info("[LOCK] 락 해제 완료: {}", key);
+			} catch (IllegalMonitorStateException e) {
+				log.info("[LOCK] 이미 해제된 락: {}", key);
+			}
+		}
+	}
+}
+```
+
+먼저 이전에 어노테이션을 선언한 `createBooking` 메소드의 `@DistributedLock` 을 다시 한번 봐보자.
+
+```java 
+
+@DistributedLock(
+		key = "'ticket:' + #bookingRequest.ticketId()",
+		waitTime = 0,
+		leaseTime = 10,
+		timeUnit = TimeUnit.SECONDS
+	)
+```
+
+key 부분을 보면 `#bookingRequest.ticketId()` 가 있는데 이는 SpEL (스프링 표현식) 문법이다.
+코드에서 문자열로 쓴 표현('ticket:' + #bookingRequest.ticketId())을 실제 객체의 값으로 평가할 수 있게 해주는 기능이라고 생각하면 된다.
+이는 실제 런타임 시 실제 파라미터의 `bookingRequest.ticketId()` 값으로 바뀌게된다.
+간단히 예를 들자면 그냥 `ticketId:1` 처럼 바뀌는 것이다.
+
+`ExpressionParser parser = new SpelExpressionParser();` 는  문자열 형태로 적힌 `"‘ticket:’ + #bookingRequest.ticketId()"`를
+Expression 객체로 변환한다.
+이후 getValue(context) 메서드를 통해 실제 값을 계산할 수 있게 해준다.
+
+`StandardEvaluationContext context = new StandardEvaluationContext();`는
+SpEL이 표현식을 해석할 때 사용할 변수 환경(context) 을 설정한다. 여기서 사용할 변수 환경이란 것이 조금 의문이 들었는데,
+SpEL은 “#bookingRequest”가 뭔 객체인지, ticketId()가 뭘 의미하는지 알 수 없다고 한다. 그래서 SpEL 이 어디서 어떤 변수를 찾아야 하는지 알려주는게 필요하다.
+그리고 그걸 바로 `EvaluationContext` (평가 컨텍스트) 라고 한다.
+
+쉽게 말해서, 변수 사전을 만들어주고 "bookingRequest" 가 뭔지 모른다면, context 안에서 찾아봐" 라는 말이다.
+
+`parser.parseExpression(...).getValue(context, String.class);` 는
+parser 가 문자열을 표현식으로 바꾸고 context 를 통해 실제 값으로 평가하는 것이다.
+
+```java 
+String key = parser.parseExpression(distributedLock.key())
+                   .getValue(context, String.class);
+```
+이 줄이 실행되면   
+
+- `distributedLock.key() = "‘ticket:’ + #bookingRequest.ticketId()"`
+- `context = bookingRequest.ticketId() == 5`
+
+즉, `ticket:5` 와 같이 표현된다.
+
+---
+
+위와 같이 SpEL 표현식을 파싱하는 과정들을 거치고 이제 락 획득을 시도한다.
+실패한다면 에러를 던지고, 성공했다면 `aopForTransaction.proceed(joinPoint);` 이 실행될 것이다.
+
+`aopForTransaction.proceed(joinPoint)` 는 그냥 락 획득 후 실행하려고 했던 `createBooking` 메소드를 실행하는 것이다.
+하지만, 조금의 추가된 설정들이 있으니 한번 알아보자.
+
+아래의 코드를 보자.
+
+```java 
+
+@Component
+@Slf4j
+public class AopForTransaction {
+
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public Object proceed(final ProceedingJoinPoint joinPoint) throws Throwable {
+		Object result = joinPoint.proceed();
+
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				log.info("[TX] 트랜잭션 커밋 완료");
+			}
+
+			@Override
+			public void afterCompletion(int status) {
+				if (status == STATUS_COMMITTED) {
+					log.info("[TX] afterCompletion: 커밋 완료 상태");
+				} else if (status == STATUS_ROLLED_BACK) {
+					log.info("[TX] afterCompletion: 롤백됨");
+				}
+			}
+		});
+
+		return result;
+	}
+}
+```
+`Propagation.REQUIRES_NEW`는 새 트랜잭션을 “강제로” 시작하는 설정이다.
+기존 `BookingService.createBooking()`에는 트랜잭션이 없으므로, 만약 REQUIRES_NEW가 빠지면 그냥 단순히 DB save()를 호출할 뿐이고,
+커밋, 롤백, afterCommit 같은 트랜잭션 이벤트는 전혀 발생하지 않게 된다.
+
+여기서는 `REQUIRES_NEW` 덕분에 락이 걸린 구간 안에서 “트랜잭션이 명확히 분리된 상태로” DB 작업이 일어나게 된다. 
+
+---
+
+## 회고
+
+위와 같이 분산락을 적용하고 AOP 를 통해 코드를 분리했다. 이론대로 구현해보긴 했지만
+아직 머릿 속에서 명확히 정리된 느낌은 아니다. 또 내가 놓치고 있는 부분은 없을까? 라는 걱정이 들기도한다.
+
+하지만 그래도 조금 성장한 것 같은 기분이 든다. 예전 같았으면 대충 듣고 넘어갔을 "트랜잭션" 이라는 개념을 하루, 이틀 넘게 정말 명확하게 이해하기 위해서 
+자료를 찾고 트랜잭션의 범위, 최소화 등 깊게 이해하려고 노력했다. 
